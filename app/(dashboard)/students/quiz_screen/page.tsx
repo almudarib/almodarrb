@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { getSession } from '@/lib/session';
 import {
   fetchStudent,
@@ -16,7 +17,28 @@ import QuizClient from './QuizClient';
  * - تتحقق من الطالب واللغة وصلاحية عرض الاختبارات
  * - تجلب بيانات الامتحان والأسئلة وتمريرها لمكوّن عميل
  */
-export default async function QuizScreenPage({
+export default function QuizScreenPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div dir="rtl" className="min-h-svh bg-slate-50 flex items-center justify-center p-6">
+          <div className="w-full max-w-xl bg-white rounded-2xl border border-slate-200 p-6 shadow-sm text-center">
+            <h1 className="text-xl font-bold mb-2">جارٍ تحميل الاختبار…</h1>
+            <p className="text-slate-600">يرجى الانتظار لحظات قليلة.</p>
+          </div>
+        </div>
+      }
+    >
+      <QuizScreenContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function QuizScreenContent({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

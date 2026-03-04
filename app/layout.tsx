@@ -10,8 +10,17 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: {
+    default: "المدرب",
+    template: "%s | المدرب",
+  },
+  applicationName: "المدرب",
+  description: "منصة اختبارات وتدريب",
+  icons: [
+    { rel: "icon", url: "/logo%20(1).png" },
+    { rel: "shortcut icon", url: "/logo%20(1).png" },
+    { rel: "apple-touch-icon", url: "/logo%20(1).png" },
+  ],
 };
 
 export default function RootLayout({
@@ -23,6 +32,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="emotion-insertion-point" content="" />
+        <link rel="icon" href="/logo%20(1).png" />
+        <link rel="apple-touch-icon" href="/logo%20(1).png" />
       </head>
       <body className="antialiased">
         <EmotionProvider>
