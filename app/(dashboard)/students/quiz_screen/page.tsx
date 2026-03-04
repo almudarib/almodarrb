@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { cookies } from 'next/headers';
+import { getSession } from '@/lib/session';
 import {
   fetchStudent,
   getExam,
@@ -27,14 +27,13 @@ export default async function QuizScreenPage({
   );
   if (!examId) {
     return viewMessage('معرف الامتحان غير صالح', {
-      actionHref: '/student/exams_screen',
+      actionHref: '/students/exams_screen',
       actionText: 'العودة إلى المجموعات',
     });
   }
 
-  const cookieStore = await cookies();
-  const sidCookie = cookieStore.get('student_id');
-  const studentId = parsePositiveInt(sidCookie?.value ?? '');
+  const session = await getSession();
+  const studentId = session?.id ?? null;
   if (!studentId) {
     return viewMessage('لا يوجد طالب مرتبط بالحساب', {
       actionHref: '/student/login',
@@ -44,7 +43,7 @@ export default async function QuizScreenPage({
 
   const stuRes = await fetchStudent(studentId);
   if (!stuRes.ok) {
-    return viewMessage(stuRes.error, { actionHref: '/student/dash', actionText: 'العودة للوحة' });
+    return viewMessage(stuRes.error, { actionHref: '/students/dash', actionText: 'العودة للوحة' });
   }
   const stu = (stuRes.data as Dict | null) ?? null;
   const showExams = Boolean(stu?.['show_exams']);
@@ -53,7 +52,7 @@ export default async function QuizScreenPage({
   if (!showExams) {
     return viewMessage('غير مسموح بعرض الاختبارات حالياً', {
       dir,
-      actionHref: '/student/dash',
+      actionHref: '/students/dash',
       actionText: 'العودة للوحة',
     });
   }
@@ -62,7 +61,7 @@ export default async function QuizScreenPage({
   if (!eRes.ok || !eRes.data) {
     return viewMessage(eRes.ok ? 'الامتحان غير موجود' : eRes.error, {
       dir,
-      actionHref: '/student/exams_screen',
+      actionHref: '/students/exams_screen',
       actionText: 'العودة إلى المجموعات',
     });
   }
@@ -75,7 +74,7 @@ export default async function QuizScreenPage({
   if (!qRes.ok) {
     return viewMessage(qRes.error, {
       dir,
-      actionHref: '/student/exams_screen',
+      actionHref: '/students/exams_screen',
       actionText: 'العودة إلى المجموعات',
     });
   }
@@ -105,11 +104,10 @@ export default async function QuizScreenPage({
     durationMinutes: number;
   }): Promise<{ ok: true } | { ok: false; error: string }> {
     'use server';
-    const cookieStore = await cookies();
-    const sidCookie = cookieStore.get('student_id');
-    const studentId = parsePositiveInt(sidCookie?.value ?? '');
-    if (!studentId) return { ok: false, error: 'لا يوجد طالب مرتبط بالحساب' };
-    const res = await submitExamResult(studentId, input.examId, input.score, input.durationMinutes);
+    const session = await getSession();
+    const sid = session?.id ?? null;
+    if (!sid) return { ok: false, error: 'لا يوجد طالب مرتبط بالحساب' };
+    const res = await submitExamResult(sid, input.examId, input.score, input.durationMinutes);
     if (!res.ok) return { ok: false, error: res.error };
     return { ok: true };
   }
@@ -119,7 +117,7 @@ export default async function QuizScreenPage({
       <div className="max-w-3xl mx-auto px-4 py-4">
         <div className="flex items-center gap-2 mb-4">
           <Link
-            href={groupId ? `/student/group_exams?id=${groupId}` : '/student/exams_screen'}
+            href={groupId ? `/students/group_exams?id=${groupId}` : '/students/exams_screen'}
             className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50"
             aria-label="رجوع"
           >
