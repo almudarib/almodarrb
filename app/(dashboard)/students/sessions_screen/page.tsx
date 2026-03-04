@@ -18,7 +18,7 @@ import MovieCreationOutlinedIcon from '@mui/icons-material/MovieCreationOutlined
  * شاشة قائمة الجلسات الفيديوية (SSR)
  * - تعتمد على وجود student_id في الكوكيز
  * - تحاول جلب جلسات باللغة الخاصة بالطالب، وإن لم تتوفر تُظهر المتاح العام
- * - تفتح روابط YouTube في تبويب خارجي، وروابط الملفات مباشرة في تبويب جديد
+ * - تفتح روابط YouTube في تبويب خارجي، وروابط غير YouTube تُفتح في صفحة المشغّل
  */
 export default async function SessionsScreenPage() {
   const cookieStore = await cookies();
@@ -110,15 +110,29 @@ export default async function SessionsScreenPage() {
                     اللغة: {s.language || 'غير محددة'}
                   </Typography>
                 </Box>
-                <Button
-                  component={Link}
-                  href={`/student/video_screeen?videoUrl=${encodeURIComponent(s.video_url)}&title=${encodeURIComponent(s.title)}`}
-                  variant="contained"
-                  color="warning"
-                  startIcon={<PlayCircleOutlineIcon />}
-                >
-                  عرض الفيديو
-                </Button>
+                {isYouTubeUrl(s.video_url) ? (
+                  <Button
+                    component="a"
+                    href={s.video_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="contained"
+                    color="warning"
+                    startIcon={<PlayCircleOutlineIcon />}
+                  >
+                    عرض على YouTube
+                  </Button>
+                ) : (
+                  <Button
+                    component={Link}
+                    href={`/student/video_screeen?videoUrl=${encodeURIComponent(s.video_url)}&title=${encodeURIComponent(s.title)}`}
+                    variant="contained"
+                    color="warning"
+                    startIcon={<PlayCircleOutlineIcon />}
+                  >
+                    عرض الفيديو
+                  </Button>
+                )}
               </Paper>
             ))}
           </Stack>
@@ -167,4 +181,14 @@ function parsePositiveInt(v: string): number | null {
 function toInt(v: unknown): number {
   const n = Number(v);
   return Number.isFinite(n) ? Math.floor(n) : 0;
+}
+
+function isYouTubeUrl(url: string): boolean {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.toLowerCase();
+    return host.includes('youtube.com') || host.includes('youtu.be');
+  } catch {
+    return false;
+  }
 }

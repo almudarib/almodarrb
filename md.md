@@ -1,71 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/supabase_service.dart';
 import '../core/utils/auth_store.dart';
 import '../core/theme/colors.dart';
 
-class ExamsScreen extends StatefulWidget {
-  const ExamsScreen({super.key});
+class SessionsScreen extends StatefulWidget {
+  const SessionsScreen({super.key});
+
   @override
-  State<ExamsScreen> createState() => _ExamsScreenState();
+  State<SessionsScreen> createState() => _SessionsScreenState();
 }
 
-class _ExamsScreenState extends State<ExamsScreen> {
+class _SessionsScreenState extends State<SessionsScreen> {
   final _svc = SupabaseService();
+  List<Map<String, dynamic>> _sessions = [];
   bool _isLoading = true;
-  List<Map<String, dynamic>> _exams = [];
   String? _error;
-  String? _language;
 
   final Color primaryBlue = AppColors.brandTeal;
   final Color goldAccent = AppColors.brandGold;
-  final Color bgGrey = AppColors.brandLightBg;
-
-  TextDirection _computeTextDirection(BuildContext context) {
-    final lang = _language?.toUpperCase();
-    if (lang == 'EN' || lang == 'TR') return TextDirection.ltr;
-    if (lang != null) return TextDirection.rtl;
-    final code = Localizations.localeOf(context).languageCode.toLowerCase();
-    return (code == 'en' || code == 'tr')
-        ? TextDirection.ltr
-        : TextDirection.rtl;
-  }
-
-  Future<void> _load() async {
-    setState(() => _isLoading = true);
-    final sid = await AuthStore.getCurrentStudentId();
-    if (sid == null) {
-      setState(() {
-        _error = 'لا يوجد طالب مرتبط بالحساب';
-        _isLoading = false;
-      });
-      return;
-    }
-    final st = await _svc.fetchStudent(sid);
-    final show = st?['show_exams'] == true;
-    final language = st?['language'] as String?;
-    _language = language;
-
-    if (!show) {
-      setState(() {
-        _error = 'غير مسموح بعرض الاختبارات حالياً';
-        _isLoading = false;
-      });
-      return;
-    }
-    if (language == null) {
-      setState(() {
-        _error = 'يرجى مراجعة الإدارة لتحديد اللغة';
-        _isLoading = false;
-      });
-      return;
-    }
-
-    final exams = await _svc.examGroupsByLanguage(language);
-    setState(() {
-      _exams = exams;
-      _isLoading = false;
-    });
-  }
 
   @override
   void initState() {
@@ -73,194 +26,182 @@ class _ExamsScreenState extends State<ExamsScreen> {
     _load();
   }
 
+  Future<void> _load() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final sid = await AuthStore.getCurrentStudentId();
+      String? lang;
+      if (sid != null) {
+        final student = await _svc.fetchStudent(sid);
+        lang = (student?['language'] as String?);
+      }
+      var sessions = await _svc.listSessions(
+        isActive: true,
+        sortBy: 'created_at',
+        ascending: false,
+        page: 1,
+        perPage: 200,
+        language: lang,
+      );
+      if (sessions.isEmpty) {
+        sessions = await _svc.listSessions(
+          isActive: true,
+          sortBy: 'created_at',
+          ascending: false,
+          page: 1,
+          perPage: 200,
+        );
+      }
+      setState(() {
+        _sessions = sessions;
+        _isLoading = false;
+      });
+    } catch (_) {
+      setState(() {
+        _error = 'تعذر تحميل الجلسات';
+        _isLoading = false;
+      });
+    }
+  }
+
+  bool _isYouTubeUrl(String url) {
+    final u = Uri.tryParse(url);
+    if (u == null) return false;
+    final host = u.host.toLowerCase();
+    return host.contains('youtube.com') || host.contains('youtu.be');
+  }
+
+  Future<void> _openSession(Map<String, dynamic> s) async {
+    final url = s['video_url'] as String? ?? '';
+    final title = s['title'] as String? ?? 'مشغل الفيديو';
+    if (url.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('رابط الفيديو غير متوفر')),
+      );
+      return;
+    }
+    if (_isYouTubeUrl(url)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم فتح الفيديو على YouTube')),
+        );
+      }
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      return;
+    }
+    if (!mounted) return;
+    Navigator.pushNamed(
+      context,
+      '/video',
+      arguments: {'videoUrl': url, 'title': title},
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: _computeTextDirection(context),
-      child: WillPopScope(
-        onWillPop: () async {
-          Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil('/dashboard', (route) => false);
-          return false;
-        },
-        child: Scaffold(
-          backgroundColor: bgGrey,
-          appBar: AppBar(
-            leading: IconButton(
-              icon: const BackButtonIcon(),
-              onPressed: () => Navigator.of(
-                context,
-              ).pushNamedAndRemoveUntil('/dashboard', (route) => false),
-            ),
-            title: const Text(
-              'مركز الاختبارات',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: primaryBlue,
-            foregroundColor: Colors.white,
-            centerTitle: true,
-            elevation: 0,
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context)
+                .pushNamedAndRemoveUntil('/dashboard', (route) => false),
           ),
-          body: _isLoading
-              ? Center(child: CircularProgressIndicator(color: primaryBlue))
-              : _error != null
-              ? _buildErrorState()
-              : _exams.isEmpty
-              ? _buildEmptyState()
-              : _buildExamsList(),
+          title: const Text('الدروس التعليمية'),
+          backgroundColor: primaryBlue,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
         ),
-      ),
-    );
-  }
-
-  // واجهة عرض الاختبارات
-  Widget _buildExamsList() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _exams.length,
-      itemBuilder: (context, index) {
-        final e = _exams[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(15),
-            child: IntrinsicHeight(
-              child: Row(
-                children: [
-                  // شريط جانبي ملون لتمييز الاختبار
-                  Container(width: 6, color: goldAccent),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            e['title'] ?? 'مجموعة غير معنونة',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: primaryBlue,
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator(color: primaryBlue))
+            : _error != null
+                ? Center(
+                    child: Text(_error!,
+                        style: const TextStyle(color: Colors.red)),
+                  )
+                : _sessions.isEmpty
+                    ? const Center(child: Text('لا توجد جلسات فيديو متاحة'))
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _sessions.length,
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final s = _sessions[index];
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.03),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              _buildInfoTag(
-                                Icons.category_outlined,
-                                'مجموعة اختبارات',
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor:
+                                        primaryBlue.withOpacity(0.1),
+                                    child: Text(
+                                      '${(s['order_number'] ?? index + 1)}',
+                                      style: TextStyle(
+                                        color: primaryBlue,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          s['title'] ?? 'درس',
+                                          style: TextStyle(
+                                            color: primaryBlue,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'اللغة: ${s['language'] ?? ''}',
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () => _openSession(s),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: goldAccent,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    child: const Text('عرض الفيديو'),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                          );
+                        },
                       ),
-                    ),
-                  ),
-                  // زر فتح المجموعة
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(
-                          context,
-                          '/exams/group',
-                          arguments: {'groupId': e['id'], 'title': e['title']},
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryBlue,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                      ),
-                      child: const Text('افتح'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // ويدجت صغيرة للمعلومات (المدة، النوع)
-  Widget _buildInfoTag(IconData icon, String label) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: Colors.grey[600]),
-        const SizedBox(width: 4),
-        Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-      ],
-    );
-  }
-
-  // واجهة الخطأ أو القيود
-  Widget _buildErrorState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(30),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.lock_person_rounded,
-              size: 80,
-              color: goldAccent.withOpacity(0.5),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              _error!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.brandBlueGray,
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextButton(
-              onPressed: _load,
-              child: Text('تحديث الصفحة', style: TextStyle(color: primaryBlue)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // واجهة لا يوجد اختبارات
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.assignment_turned_in_outlined,
-            size: 70,
-            color: Colors.grey[300],
-          ),
-          const SizedBox(height: 15),
-          const Text(
-            'لا توجد مجموعات متاحة حالياً',
-            style: TextStyle(color: Colors.grey),
-          ),
-        ],
       ),
     );
   }

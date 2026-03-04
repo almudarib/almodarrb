@@ -18,9 +18,9 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 export default async function VideoScreeenPage({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
+  searchParams?: Record<string, string | string[] | undefined>;
 }) {
-  const sp = await searchParams;
+  const sp = searchParams ?? {};
   const videoUrl = normalizeParam(sp.videoUrl);
   const title = normalizeParam(sp.title) || 'مشغل الفيديو';
   if (!videoUrl) {
