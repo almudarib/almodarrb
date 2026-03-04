@@ -43,7 +43,7 @@ export default function StudentDashPageUI({ exams = 12, doneExams = 1, logoutAct
   const progress = exams > 0 ? (doneExams / exams) * 100 : 0;
 
   return (
-    <Box sx={{ bgcolor: THEME_COLORS.background, minHeight: "100vh", direction: "rtl" }}>
+    <Box sx={{ bgcolor: THEME_COLORS.background, minHeight: "100vh", direction: "rtl", fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>
       {/* الترويسة - Header */}
       <Box
         sx={{

@@ -124,7 +124,7 @@ export default async function GroupExamsPage({
                 <div className="flex">
                   <div className="w-1.5 bg-amber-500" />
                   <div className="flex-1 p-4">
-                    <div className="font-bold text-sky-700 text-base">{e.title}</div>
+                    <div className="font-bold text-[#09203A] text-base">{e.title}</div>
                     <div className="mt-2 flex items-center gap-3 text-xs text-slate-500">
                       <InfoTag label={`${e.duration} دقيقة`} />
                       <InfoTag label="متعدد الخيارات" />
@@ -133,7 +133,7 @@ export default async function GroupExamsPage({
                   <div className="p-3">
                     <Link
                       href={`/students/quiz_screen?examId=${e.id}`}
-                      className="inline-flex items-center px-4 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700"
+                      className="inline-flex items-center px-4 py-2 rounded-lg bg-[#09203A] text-white hover:bg-[#09203A]"
                     >
                       ابدأ
                     </Link>
