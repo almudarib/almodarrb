@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import EmotionProvider from "./emotion";
+import ProtectionProvider from "./security/ProtectionProvider";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -25,14 +26,16 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <EmotionProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
+          <ProtectionProvider config={{ watermarkText: "", protectCopy: true, protectScreenshot: true, protectVideo: true }}>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+            </ThemeProvider>
+          </ProtectionProvider>
         </EmotionProvider>
       </body>
     </html>

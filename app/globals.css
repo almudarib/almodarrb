@@ -67,4 +67,14 @@
     @apply bg-background text-foreground;
     font-family: 'IBM Plex Sans Arabic', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', 'Microsoft Yahei', sans-serif;
   }
+  html.protect-copy *:not(input):not(textarea):not([data-allow-copy="true"]) {
+    -webkit-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    -webkit-touch-callout: none !important;
+  }
+  html.protect-copy img {
+    -webkit-user-drag: none;
+    user-drag: none;
+  }
 }

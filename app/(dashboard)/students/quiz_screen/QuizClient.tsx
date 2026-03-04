@@ -17,6 +17,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import { Timer, Star } from 'lucide-react'; // استخدام أيقونة النجمة المطابقة للصورة
+import ProtectionProvider from '../../../security/ProtectionProvider';
 
 type Question = {
   id: number;
@@ -109,6 +110,7 @@ export default function QuizClient({
   const progress = totalSeconds > 0 ? ((totalSeconds - left) / totalSeconds) * 100 : 0;
 
   return (
+    <ProtectionProvider config={{ watermarkText: 'المدرب والاستاذ أبو تيم', watermarkWithTime: false }}>
     <Container maxWidth="sm" sx={{ py: 3, direction: 'rtl' }}>
       <Stack spacing={3}>
         
@@ -249,6 +251,7 @@ export default function QuizClient({
         </Fade>
       </Modal>
     </Container>
+    </ProtectionProvider>
   );
 }
 
