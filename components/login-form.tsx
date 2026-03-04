@@ -69,7 +69,7 @@ export function LoginForm() {
     try {
       const ni = nationalId.trim();
       if (!/^\d{10,20}$/.test(ni)) {
-        setError("يرجى إدخال رقم هوية صالح (10-20 رقمًا)");
+        setError("يجب ادخال الشيفرة");
         setLoading(false);
         return;
       }

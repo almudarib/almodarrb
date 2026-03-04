@@ -45,7 +45,7 @@ export async function loginStudentByNationalId(input: {
     const verify = await verifyOrRegisterDevice(studentId, fingerprint);
     if (!verify.ok) return { ok: false, error: verify.error };
     if (!verify.data) {
-      return { ok: false, error: 'هذا الجهاز غير معتمد لهذا الطالب' };
+      return { ok: false, error: "هذا الحساب مرتبط بجهاز آخر" };
     }
 
     try {
