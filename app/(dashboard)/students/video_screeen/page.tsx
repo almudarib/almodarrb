@@ -1,11 +1,9 @@
 import Link from 'next/link';
-import { cookies } from 'next/headers';
 import { getVideoInfo } from '@/actions/video';
 
 /**
  * شاشة مشغل الفيديو (SSR)
  * - تقرأ videoUrl و title من searchParams
- * - تتحقق من وجود الطالب عبر الكوكيز
  * - تدعم روابط YouTube عبر iframe، وروابط ملفات الفيديو عبر عنصر video
  */
 export default async function VideoScreeenPage({
@@ -23,20 +21,10 @@ export default async function VideoScreeenPage({
     });
   }
 
-  const cookieStore = await cookies();
-  const sid = cookieStore.get('student_id')?.value ?? '';
-  if (!parsePositiveInt(sid)) {
-    return viewMessage('لا يوجد طالب مرتبط بالحساب', {
-      actionHref: '/student/login',
-      actionText: 'الذهاب لصفحة الدخول',
-    });
-  }
-
   const yt = asYouTubeEmbed(videoUrl);
   if (yt) {
     return (
       <div dir="rtl" className="min-h-svh bg-slate-50">
-        <Header title={title} />
         <div className="max-w-5xl mx-auto px-4 py-6">
           <div className="aspect-video w-full rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-black">
             <iframe
@@ -63,7 +51,6 @@ export default async function VideoScreeenPage({
 
   return (
     <div dir="rtl" className="min-h-svh bg-slate-50">
-      <Header title={title} />
       <div className="max-w-5xl mx-auto px-4 py-6">
         <div className="rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-black">
           <video
@@ -83,23 +70,6 @@ export default async function VideoScreeenPage({
             فتح في تبويب جديد
           </a>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function Header({ title }: { title: string }) {
-  return (
-    <div className="bg-white border-b border-slate-200">
-      <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-2">
-        <Link
-          href="/student/sessions_screen"
-          className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50"
-          aria-label="رجوع"
-        >
-          ← رجوع
-        </Link>
-        <h1 className="text-lg font-bold text-slate-800">{title}</h1>
       </div>
     </div>
   );
@@ -131,11 +101,6 @@ function normalizeParam(v: string | string[] | undefined): string | null {
   const raw = Array.isArray(v) ? v[0] : v;
   const s = String(raw ?? '').trim();
   return s.length > 0 ? s : null;
-}
-
-function parsePositiveInt(v: string): number | null {
-  const n = Number(v);
-  return Number.isInteger(n) && n > 0 ? n : null;
 }
 
 function asYouTubeEmbed(url: string): string | null {

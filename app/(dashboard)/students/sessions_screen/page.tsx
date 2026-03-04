@@ -12,20 +12,16 @@ export default async function SessionsScreenPage() {
   const cookieStore = await cookies();
   const sidCookie = cookieStore.get('student_id');
   const studentId = parsePositiveInt(sidCookie?.value ?? '');
-  if (!studentId) {
-    return viewMessage('لا يوجد طالب مرتبط بالحساب', {
-      actionHref: '/student/login',
-      actionText: 'الذهاب لصفحة الدخول',
-    });
-  }
 
   // محاولة معرفة لغة الطالب لتحسين نتائج الجلسات
   let language: string | null = null;
-  const stuRes = await fetchStudent(studentId);
-  if (stuRes.ok) {
-    const stu = (stuRes.data as Dict) ?? {};
-    const lang = String(stu['language'] ?? '').trim();
-    language = lang || null;
+  if (studentId) {
+    const stuRes = await fetchStudent(studentId);
+    if (stuRes.ok) {
+      const stu = (stuRes.data as Dict) ?? {};
+      const lang = String(stu['language'] ?? '').trim();
+      language = lang || null;
+    }
   }
 
   // طلب الجلسات باللغة المحددة أولاً، ثم بديل عام عند غياب النتائج
