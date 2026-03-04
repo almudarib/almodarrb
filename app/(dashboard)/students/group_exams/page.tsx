@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { cookies } from 'next/headers';
+import { getSession } from '@/lib/session';
 import {
   fetchStudent,
   getExamGroup,
@@ -26,14 +26,13 @@ export default async function GroupExamsPage({
     typeof sp.title === 'string' ? sp.title : Array.isArray(sp.title) ? sp.title[0] : undefined;
   if (!groupId) {
     return viewMessage('معرف المجموعة غير صالح', {
-      actionHref: '/student/exams_screen',
+      actionHref: '/students/exams_screen',
       actionText: 'العودة إلى المجموعات',
     });
   }
 
-  const cookieStore = await cookies();
-  const sidCookie = cookieStore.get('student_id');
-  const studentId = parsePositiveInt(sidCookie?.value ?? '');
+  const session = await getSession();
+  const studentId = session?.id ?? null;
   if (!studentId) {
     return viewMessage('لا يوجد طالب مرتبط بالحساب', {
       actionHref: '/student/login',
@@ -43,7 +42,7 @@ export default async function GroupExamsPage({
 
   const stuRes = await fetchStudent(studentId);
   if (!stuRes.ok) {
-    return viewMessage(stuRes.error, { actionHref: '/student/dash', actionText: 'العودة للوحة' });
+    return viewMessage(stuRes.error, { actionHref: '/students/dash', actionText: 'العودة للوحة' });
   }
   const stu = (stuRes.data as Dict | null) ?? null;
   const showExams = Boolean(stu?.['show_exams']);
@@ -52,14 +51,14 @@ export default async function GroupExamsPage({
   if (!showExams) {
     return viewMessage('غير مسموح بعرض الاختبارات حالياً', {
       dir,
-      actionHref: '/student/dash',
+      actionHref: '/students/dash',
       actionText: 'العودة للوحة',
     });
   }
   if (!language) {
     return viewMessage('يرجى مراجعة الإدارة لتحديد اللغة', {
       dir,
-      actionHref: '/student/dash',
+      actionHref: '/students/dash',
       actionText: 'العودة للوحة',
     });
   }
@@ -69,14 +68,14 @@ export default async function GroupExamsPage({
   if (!groupTitle) {
     const gRes = await getExamGroup(groupId);
     if (!gRes.ok) {
-      return viewMessage(gRes.error, { dir, actionHref: '/student/exams_screen', actionText: 'العودة إلى المجموعات' });
+      return viewMessage(gRes.error, { dir, actionHref: '/students/exams_screen', actionText: 'العودة إلى المجموعات' });
     }
     groupTitle = String((gRes.data as Dict | null)?.['title'] ?? 'اختبارات المجموعة');
   }
 
   const exRes = await examsByGroup(groupId);
   if (!exRes.ok) {
-    return viewMessage(exRes.error, { dir, actionHref: '/student/exams_screen', actionText: 'العودة إلى المجموعات' });
+    return viewMessage(exRes.error, { dir, actionHref: '/students/exams_screen', actionText: 'العودة إلى المجموعات' });
   }
   const exams = ((exRes.data as Dict[]) ?? []).slice();
   exams.sort((a, b) => {
@@ -104,7 +103,7 @@ export default async function GroupExamsPage({
       <div className="max-w-3xl mx-auto px-4 py-4">
         <div className="flex items-center gap-2 mb-4">
           <Link
-            href="/student/exams_screen"
+            href="/students/exams_screen"
             className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50"
             aria-label="رجوع"
           >
@@ -133,7 +132,7 @@ export default async function GroupExamsPage({
                   </div>
                   <div className="p-3">
                     <Link
-                      href={`/student/quiz_screen?examId=${e.id}`}
+                      href={`/students/quiz_screen?examId=${e.id}`}
                       className="inline-flex items-center px-4 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700"
                     >
                       ابدأ
