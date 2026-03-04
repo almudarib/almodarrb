@@ -1,5 +1,14 @@
 import Link from 'next/link';
 import { getVideoInfo } from '@/actions/video';
+import {
+  Container,
+  Box,
+  Paper,
+  Typography,
+  Button,
+} from '@mui/material';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 /**
  * شاشة مشغل الفيديو (SSR)
@@ -24,19 +33,27 @@ export default async function VideoScreeenPage({
   const yt = asYouTubeEmbed(videoUrl);
   if (yt) {
     return (
-      <div dir="rtl" className="min-h-svh bg-slate-50">
-        <div className="max-w-5xl mx-auto px-4 py-6">
-          <div className="aspect-video w-full rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-black">
-            <iframe
-              src={yt}
-              title={title}
-              className="w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
-          </div>
-        </div>
-      </div>
+      <Box dir="rtl" sx={{ minHeight: '100svh', bgcolor: 'rgb(248 250 252)' }}>
+        <Container maxWidth="lg" sx={{ py: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+            <Button component={Link} href="/student/sessions_screen" variant="outlined" startIcon={<ArrowBackIosNewIcon />}>
+              رجوع
+            </Button>
+            <Typography fontWeight={700}>{title}</Typography>
+          </Box>
+          <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden', bgcolor: 'black' }}>
+            <Box sx={{ width: '100%', aspectRatio: '16 / 9' }}>
+              <iframe
+                src={yt}
+                title={title}
+                style={{ width: '100%', height: '100%' }}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </Box>
+          </Paper>
+        </Container>
+      </Box>
     );
   }
 
@@ -50,49 +67,58 @@ export default async function VideoScreeenPage({
   }
 
   return (
-    <div dir="rtl" className="min-h-svh bg-slate-50">
-      <div className="max-w-5xl mx-auto px-4 py-6">
-        <div className="rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-black">
-          <video
-            src={info.data.url}
-            controls
-            className="w-full h-auto"
-            style={{ maxHeight: '80vh' }}
-          />
-        </div>
-        <div className="mt-3 text-center">
-          <a
+    <Box dir="rtl" sx={{ minHeight: '100svh', bgcolor: 'rgb(248 250 252)' }}>
+      <Container maxWidth="lg" sx={{ py: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+          <Button component={Link} href="/student/sessions_screen" variant="outlined" startIcon={<ArrowBackIosNewIcon />}>
+            رجوع
+          </Button>
+          <Typography fontWeight={700}>{title}</Typography>
+        </Box>
+        <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden', bgcolor: 'black' }}>
+          <Box>
+            <video
+              src={info.data.url}
+              controls
+              style={{ width: '100%', height: 'auto', maxHeight: '80vh' }}
+            />
+          </Box>
+        </Paper>
+        <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Button
             href={info.data.url}
-            className="text-sky-700 hover:underline"
             target="_blank"
             rel="noopener noreferrer"
+            variant="text"
+            startIcon={<OpenInNewIcon />}
           >
             فتح في تبويب جديد
-          </a>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </Box>
+      </Container>
+    </Box>
   );
 }
 
 function viewMessage(message: string, opts?: { actionHref?: string; actionText?: string }) {
   return (
-    <div dir="rtl" className="min-h-svh bg-slate-50 flex items-center justify-center p-6">
-      <div className="w-full max-w-xl bg-white rounded-2xl border border-slate-200 p-6 shadow-sm text-center">
-        <h1 className="text-xl font-bold mb-2">تنبيه</h1>
-        <p className="text-slate-600">{message}</p>
-        {opts?.actionHref && opts?.actionText ? (
-          <div className="mt-4">
-            <Link
-              className="inline-flex items-center px-4 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700"
-              href={opts.actionHref}
-            >
-              {opts.actionText}
-            </Link>
-          </div>
-        ) : null}
-      </div>
-    </div>
+    <Box dir="rtl" sx={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3, bgcolor: 'rgb(248 250 252)' }}>
+      <Container maxWidth="sm">
+        <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
+          <Typography fontWeight={700} sx={{ mb: 1.5 }}>
+            تنبيه
+          </Typography>
+          <Typography color="text.secondary">{message}</Typography>
+          {opts?.actionHref && opts?.actionText ? (
+            <Box sx={{ mt: 2 }}>
+              <Button component={Link} href={opts.actionHref} variant="contained" color="primary">
+                {opts.actionText}
+              </Button>
+            </Box>
+          ) : null}
+        </Paper>
+      </Container>
+    </Box>
   );
 }
 

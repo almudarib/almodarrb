@@ -1,6 +1,18 @@
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { fetchStudent, listSessions, type Dict } from '@/actions/service';
+import {
+  Container,
+  Box,
+  Paper,
+  Typography,
+  Button,
+  Avatar,
+  Stack,
+} from '@mui/material';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import MovieCreationOutlinedIcon from '@mui/icons-material/MovieCreationOutlined';
 
 /**
  * شاشة قائمة الجلسات الفيديوية (SSR)
@@ -59,80 +71,91 @@ export default async function SessionsScreenPage() {
   })).filter((s) => s.id > 0 && s.video_url);
 
   return (
-    <div dir="rtl" className="min-h-svh bg-slate-50">
-      <div className="max-w-3xl mx-auto px-4 py-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Link
+    <Box dir="rtl" sx={{ minHeight: '100svh', bgcolor: 'rgb(248 250 252)' }}>
+      <Container maxWidth="md" sx={{ py: 2 }}>
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+          <Button
+            component={Link}
             href="/student/dash"
-            className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50"
-            aria-label="رجوع"
+            variant="outlined"
+            startIcon={<ArrowBackIosNewIcon />}
           >
-            ← رجوع
-          </Link>
-          <h1 className="text-lg font-bold text-slate-800">الدروس التعليمية</h1>
-        </div>
-
+            رجوع
+          </Button>
+          <Typography fontWeight={700}>الدروس التعليمية</Typography>
+        </Stack>
         {list.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="space-y-3">
+          <Stack spacing={1.5}>
             {list.map((s, index) => (
-              <div
+              <Paper
                 key={s.id}
-                className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex items-center"
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                }}
               >
-                <div className="w-10 h-10 rounded-full bg-sky-50 text-sky-700 flex items-center justify-center font-bold">
-                  {(s.order_number || index + 1)}
-                </div>
-                <div className="flex-1 ms-3">
-                  <div className="font-semibold text-sky-700">{s.title}</div>
-                  <div className="text-xs text-slate-500">اللغة: {s.language || 'غير محددة'}</div>
-                </div>
-                <div className="ms-2">
-                  <Link
-                    href={`/student/video_screeen?videoUrl=${encodeURIComponent(s.video_url)}&title=${encodeURIComponent(s.title)}`}
-                    className="inline-flex items-center px-4 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600"
-                    aria-label="عرض الفيديو"
-                  >
-                    عرض الفيديو
-                  </Link>
-                </div>
-              </div>
+                <Avatar sx={{ bgcolor: 'rgb(240 249 255)', color: 'rgb(3 105 161)', fontWeight: 700 }}>
+                  {s.order_number || index + 1}
+                </Avatar>
+                <Box sx={{ flex: 1 }}>
+                  <Typography color="rgb(3 105 161)" fontWeight={600}>
+                    {s.title}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    اللغة: {s.language || 'غير محددة'}
+                  </Typography>
+                </Box>
+                <Button
+                  component={Link}
+                  href={`/student/video_screeen?videoUrl=${encodeURIComponent(s.video_url)}&title=${encodeURIComponent(s.title)}`}
+                  variant="contained"
+                  color="warning"
+                  startIcon={<PlayCircleOutlineIcon />}
+                >
+                  عرض الفيديو
+                </Button>
+              </Paper>
             ))}
-          </div>
+          </Stack>
         )}
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
 }
 
 function EmptyState() {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
-      <div className="text-5xl text-slate-200 mb-3">🎬</div>
-      <div className="text-slate-600">لا توجد جلسات فيديو متاحة</div>
-    </div>
+    <Paper variant="outlined" sx={{ p: 4, textAlign: 'center' }}>
+      <MovieCreationOutlinedIcon sx={{ fontSize: 56, color: 'text.disabled', mb: 1 }} />
+      <Typography color="text.secondary">لا توجد جلسات فيديو متاحة</Typography>
+    </Paper>
   );
 }
 
 function viewMessage(message: string, opts?: { actionHref?: string; actionText?: string }) {
   return (
-    <div dir="rtl" className="min-h-svh bg-slate-50 flex items-center justify-center p-6">
-      <div className="w-full max-w-xl bg-white rounded-2xl border border-slate-200 p-6 shadow-sm text-center">
-        <h1 className="text-xl font-bold mb-2">تنبيه</h1>
-        <p className="text-slate-600">{message}</p>
-        {opts?.actionHref && opts?.actionText ? (
-          <div className="mt-4">
-            <Link
-              className="inline-flex items-center px-4 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700"
-              href={opts.actionHref}
-            >
-              {opts.actionText}
-            </Link>
-          </div>
-        ) : null}
-      </div>
-    </div>
+    <Box dir="rtl" sx={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3, bgcolor: 'rgb(248 250 252)' }}>
+      <Container maxWidth="sm">
+        <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
+          <Typography fontWeight={700} sx={{ mb: 1.5 }}>
+            تنبيه
+          </Typography>
+          <Typography color="text.secondary">{message}</Typography>
+          {opts?.actionHref && opts?.actionText ? (
+            <Box sx={{ mt: 2 }}>
+              <Button component={Link} href={opts.actionHref} variant="contained" color="primary">
+                {opts.actionText}
+              </Button>
+            </Box>
+          ) : null}
+        </Paper>
+      </Container>
+    </Box>
   );
 }
 

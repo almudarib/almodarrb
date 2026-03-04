@@ -4,6 +4,8 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { loginStudentByNationalId } from "@/actions/stu-auth";
 import { DASHBOARD_PATH } from "@/lib/paths";
+import Image from "next/image";
+import Logo from "@/app/logo (1).png";
 import {
   Box,
   Container,
@@ -13,63 +15,45 @@ import {
   Stack,
   Alert,
   IconButton,
-  Paper,
+  Avatar,
 } from "@mui/material";
 import { Instagram, Facebook, WhatsApp, MusicNote } from "@mui/icons-material";
 
 async function sha256Hex(input: string): Promise<string> {
-  try {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(input);
-    const digest = await crypto.subtle.digest("SHA-256", data);
-    const bytes = Array.from(new Uint8Array(digest));
-    return bytes.map((b) => b.toString(16).padStart(2, "0")).join("");
-  } catch {
-    const arr = new Uint8Array(16);
-    (crypto.getRandomValues ? crypto.getRandomValues(arr) : arr).forEach((_, i) => {
-      arr[i] = Math.floor(Math.random() * 256);
-    });
-    return Array.from(arr).map((b) => b.toString(16).padStart(2, "0")).join("");
-  }
+  const enc = new TextEncoder().encode(input);
+  const hash = await crypto.subtle.digest("SHA-256", enc);
+  const bytes = Array.from(new Uint8Array(hash));
+  return bytes.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 async function getOrCreateDeviceFingerprint(): Promise<string> {
   try {
-    const key = "device_fingerprint";
-    const existing = typeof window !== "undefined" ? localStorage.getItem(key) : null;
-    if (existing && existing.trim().length > 0) return existing;
-    const nav = (typeof navigator !== "undefined"
-      ? (navigator as Navigator & { hardwareConcurrency?: number })
-      : undefined);
-    const raw = JSON.stringify({
-      ua: nav ? nav.userAgent : "",
-      lang: nav ? nav.language : "",
-      tz:
-        typeof Intl !== "undefined" && Intl.DateTimeFormat
-          ? Intl.DateTimeFormat().resolvedOptions().timeZone
-          : "",
-      cores: nav?.hardwareConcurrency ?? "",
-      screen:
-        typeof window !== "undefined"
-          ? { w: window.screen?.width ?? 0, h: window.screen?.height ?? 0, dpr: window.devicePixelRatio ?? 1 }
-          : { w: 0, h: 0, dpr: 1 },
-      seed: crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()),
-    });
-    const fp = await sha256Hex(raw);
-    if (typeof window !== "undefined") localStorage.setItem(key, fp);
+    const key = "almodereb_device_fp";
+    const existing = localStorage.getItem(key);
+    if (existing) return existing;
+    const seedParts = [
+      navigator.userAgent || "",
+      navigator.language || "",
+      String(screen?.width || ""),
+      String(screen?.height || ""),
+      String(new Date().getTimezoneOffset()),
+      String(Math.random()),
+      String(performance?.now() || ""),
+    ].join("|");
+    const fp = await sha256Hex(seedParts);
+    localStorage.setItem(key, fp);
     return fp;
   } catch {
-    return String(Date.now());
+    return "anon";
   }
 }
 
-function formatErrorMessage(msg: unknown): string {
-  if (typeof msg === "string") return msg;
-  if (msg instanceof Error) return msg.message;
+function formatErrorMessage(e: unknown): string {
+  if (e instanceof Error) return e.message;
   try {
-    return JSON.stringify(msg);
+    return String(e);
   } catch {
-    return "حدث خطأ غير معروف";
+    return "Unknown error";
   }
 }
 
@@ -79,15 +63,7 @@ export function LoginForm() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  function openExternal(url: string) {
-    try {
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch {
-      location.href = url;
-    }
-  }
-
-  async function handleLogin() {
+  const handleLogin = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -113,92 +89,123 @@ export function LoginForm() {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
-    <Container
-      maxWidth="sm"
-      sx={{ display: "flex", minHeight: "100svh", alignItems: "center", justifyContent: "center" }}
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: "#f8f9fa", // خلفية فاتحة جداً مثل الصورة
+        p: 2,
+      }}
     >
-      <Paper elevation={0} sx={{ p: 4, width: "100%", borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
+      <Container maxWidth="xs">
         <Stack spacing={3} alignItems="center">
+          
+          {/* الشعار - Logo */}
           <Box
             sx={{
-              width: "100%",
-              bgcolor: "primary.main",
-              opacity: 0.06,
-              borderRadius: 2,
-              border: "1px solid",
-              borderColor: "primary.main",
-              p: 2,
-              textAlign: "center",
+              p: 1,
+              bgcolor: "white",
+              borderRadius: "24px",
+              boxShadow: "0px 4px 20px rgba(0,0,0,0.05)",
+              border: "1px solid #e0e0e0",
+              mb: 2
             }}
           >
-            <Typography color="primary" fontWeight={700}>
-              تسجيل دخول الطالب
-            </Typography>
+            <Avatar variant="rounded" sx={{ width: 180, height: 180, borderRadius: "18px", overflow: "hidden" }}>
+              <Image src={Logo} alt="Logo" width={180} height={180} />
+            </Avatar>
           </Box>
+
+          {/* حقل إدخال رقم الهوية */}
           <TextField
+            fullWidth
+            placeholder="أدخل رقم الهوية"
             value={nationalId}
             onChange={(e) => setNationalId(e.target.value)}
-            fullWidth
-            inputMode="numeric"
-            placeholder="أدخل رقم الهوية"
-            label="رقم الهوية"
             disabled={loading}
-            FormHelperTextProps={{ sx: { textAlign: "center" } }}
-            inputProps={{ inputMode: "numeric", pattern: "\\d*", style: { textAlign: "center" } }}
+            variant="outlined"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "16px",
+                bgcolor: "white",
+                height: "60px",
+                fontSize: "1.1rem",
+                "& fieldset": { borderColor: "#eee" },
+              },
+              "& input": { textAlign: "center", color: "#455a64" },
+            }}
           />
+
+          {/* زر الدخول */}
           <Button
-            onClick={handleLogin}
             fullWidth
-            size="large"
-            variant="contained"
+            onClick={handleLogin}
             disabled={loading}
-            sx={{ borderRadius: 2, height: 48 }}
+            variant="contained"
+            sx={{
+              bgcolor: "#0a192f", // اللون الكحلي الغامق
+              color: "white",
+              borderRadius: "16px",
+              height: "60px",
+              fontSize: "1.3rem",
+              fontWeight: "bold",
+              textTransform: "none",
+              "&:hover": { bgcolor: "#050c17" },
+            }}
           >
-            {loading ? "... جارٍ الدخول" : "دخول"}
+            {loading ? "جارٍ الدخول..." : "دخول"}
           </Button>
-          {error && (
-            <Alert severity="error" sx={{ width: "100%" }}>
-              {error}
-            </Alert>
-          )}
+
+          {error && <Alert severity="error" sx={{ width: "100%", borderRadius: "12px" }}>{error}</Alert>}
+
+          {/* تذييل الصفحة - منصات التواصل */}
           <Box
             sx={{
               width: "100%",
-              bgcolor: "primary.main",
-              opacity: 0.06,
-              borderRadius: 2,
-              border: "1px solid",
-              borderColor: "primary.main",
-              p: 2,
+              bgcolor: "#f0f2f5", // خلفية الرمادي الفاتح في الأسفل
+              borderRadius: "20px",
+              p: 3,
               textAlign: "center",
+              border: "1px solid #e0e0e0",
             }}
           >
-            <Typography color="primary" fontWeight={700} sx={{ mb: 1 }}>
+            <Typography sx={{ mb: 2, color: "#263238", fontWeight: 600 }}>
               تابعنا على منصات التواصل
             </Typography>
-            <Stack direction="row" spacing={1} justifyContent="center">
-              <IconButton aria-label="Instagram" onClick={() => openExternal("https://instagram.com")} color="primary">
-                <Instagram />
-              </IconButton>
-              <IconButton aria-label="TikTok" onClick={() => openExternal("https://tiktok.com")} color="primary">
-                <MusicNote />
-              </IconButton>
-              <IconButton aria-label="Facebook" onClick={() => openExternal("https://facebook.com")} color="primary">
-                <Facebook />
-              </IconButton>
-              <IconButton aria-label="WhatsApp" onClick={() => openExternal("https://wa.me/")} color="primary">
-                <WhatsApp />
-              </IconButton>
+            
+            <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 2 }}>
+              {[
+                { icon: <Instagram />, color: "#e1306c" },
+                { icon: <MusicNote />, color: "#000000" },
+                { icon: <Facebook />, color: "#1877f2" },
+                { icon: <WhatsApp />, color: "#25d366" },
+              ].map((social, index) => (
+                <IconButton
+                  key={index}
+                  sx={{
+                    bgcolor: "white",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                    "&:hover": { bgcolor: "#f8f9fa" },
+                    p: 1.5
+                  }}
+                >
+                  {React.cloneElement(social.icon, { sx: { fontSize: 28, color: "#263238" } })}
+                </IconButton>
+              ))}
             </Stack>
-            <Typography sx={{ mt: 1 }} color="warning.main" fontWeight={600}>
+
+            <Typography sx={{ color: "#ffc107", fontWeight: "bold", fontSize: "1.1rem" }}>
               بإشراف المدرب والاستاذ (أبو تيم)
             </Typography>
           </Box>
+
         </Stack>
-      </Paper>
-    </Container>
+      </Container>
+    </Box>
   );
 }
