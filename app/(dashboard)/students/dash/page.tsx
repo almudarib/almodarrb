@@ -139,7 +139,7 @@ export default async function StudentDashPage() {
           <NavCard
             title="الاختبارات"
             subtitle="الفحص النظري"
-            href="/student/exams_screen"
+            href="/students/exams_screen"
             colorClass="text-sky-600"
             badgeClass="bg-sky-50"
             icon="📝"
@@ -147,7 +147,7 @@ export default async function StudentDashPage() {
           <NavCard
             title="الفيديوهات"
             subtitle="قم بالمشاهدة"
-            href="/student/sessions_screen"
+            href="/students/sessions_screen"
             colorClass="text-amber-600"
             badgeClass="bg-amber-50"
             icon="🎬"
