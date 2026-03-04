@@ -40,7 +40,7 @@ function isSupabasePublicUrl(url: string): boolean {
 function isSupabaseSignedUrl(url: string): boolean {
   return url.includes('/storage/v1/object/sign/') || url.includes('token=');
 }
-export function isValidImageRef(path: string | null | undefined): boolean {
+function isValidImageRef(path: string | null | undefined): boolean {
   if (!path || String(path).trim() === '') return false;
   const s = String(path);
   const lower = s.toLowerCase();
