@@ -52,10 +52,13 @@ export default async function ExamsScreenPage() {
     return viewMessage(groupsRes.error, { dir, actionHref: '/students/dash', actionText: 'العودة للوحة' });
   }
   const groups = (groupsRes.data as Dict[]) ?? [];
-  const list = groups.map((g) => ({
-    id: toInt(g['id']),
-    title: String(g['title'] ?? 'مجموعة غير معنونة'),
-  })).filter((g) => g.id > 0);
+  const list = groups
+    .map((g) => ({
+      id: toInt(g['id']),
+      title: String(g['title'] ?? 'مجموعة غير معنونة'),
+    }))
+    .filter((g) => g.id > 0)
+    .sort((a, b) => b.id - a.id);
 
   return (
     <div dir={dir} className="min-h-svh bg-slate-50">
