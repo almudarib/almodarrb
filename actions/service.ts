@@ -1,6 +1,7 @@
 'use server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
+import { revalidatePath } from 'next/cache';
 
 export type Dict = Record<string, unknown>;
 export type ServiceResult<T> =
@@ -337,6 +338,27 @@ export async function countStudentCompletedExams(studentId: number, language: st
   }
 }
 
+export async function countStudentExamAttempts(studentId: number, language: string): Promise<ServiceResult<number>> {
+  try {
+    const id = asPositiveInt(studentId);
+    if (!id) return { ok: false, error: 'studentId غير صالح', fieldErrors: { student_id: 'invalid' } };
+    const ex = await examsByLanguage(language);
+    if (!ex.ok) return ex as unknown as ServiceResult<number>;
+    const ids = ex.data.map((e) => (e['id'] as number)).filter((v) => Number.isInteger(v));
+    if (ids.length === 0) return { ok: true, data: 0 };
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from('exam_results')
+      .select('id')
+      .eq('student_id', id)
+      .in('exam_id', ids);
+    if (error) return { ok: false, error: error.message, details: error };
+    const rows = (data as Dict[]) ?? [];
+    return { ok: true, data: rows.length };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'unknown error', details: e };
+  }
+}
 export async function countWatchedSessionsForStudent(studentId: number, language: string): Promise<ServiceResult<number>> {
   try {
     const id = asPositiveInt(studentId);
@@ -768,6 +790,9 @@ export async function submitExamResult(studentId: number, examId: number, score:
       duration_minutes: dur,
     });
     if (error) return { ok: false, error: error.message, details: error };
+    try {
+      revalidatePath('/students/dash');
+    } catch {}
     return { ok: true, data: null };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'unknown error', details: e };

@@ -147,7 +147,7 @@ export default function DashClient({
             <Stack direction="row" justifyContent="center" alignItems="center" spacing={1} mt={1}>
               <Box sx={{ width: 8, height: 8, bgcolor: THEME_COLORS.accentYellow, borderRadius: "50%" }} />
               <Typography color={THEME_COLORS.subText} variant="body2" fontWeight="500">
-                {doneExams} / {exams} اختبارات
+                {doneExams} / {exams} محاولات
               </Typography>
             </Stack>
           </Paper>
