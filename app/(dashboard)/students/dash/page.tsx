@@ -1,4 +1,5 @@
 import DashClient from "./DashClient";
+import { Suspense } from "react";
 import { getSession, clearSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { LOGIN_PATH } from "@/lib/paths";
@@ -10,7 +11,23 @@ import {
   type Dict,
 } from "@/actions/service";
 
-export default async function Page() {
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <div dir="rtl" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f4f7fa" }}>
+          <div style={{ background: "#fff", borderRadius: 24, padding: 24, border: "1px solid #e5e7eb", color: "#1a365d" }}>
+            جاري تحميل لوحة الطالب…
+          </div>
+        </div>
+      }
+    >
+      <DashData />
+    </Suspense>
+  );
+}
+
+async function DashData() {
   const session = await getSession();
   if (!session) {
     redirect(LOGIN_PATH);
