@@ -7,7 +7,6 @@ import {
   fetchStudent,
   countExams,
   countStudentCompletedExams,
-  countStudentExamAttempts,
   type Dict,
 } from "@/actions/service";
 
@@ -44,13 +43,8 @@ async function DashData() {
   const totalRes = await countExams(language);
   if (totalRes.ok) exams = totalRes.data;
 
-  const attemptsRes = await countStudentExamAttempts(session.id, language);
-  if (attemptsRes.ok) {
-    doneExams = Math.min(attemptsRes.data, exams);
-  } else {
-    const doneRes = await countStudentCompletedExams(session.id, language);
-    if (doneRes.ok) doneExams = doneRes.data;
-  }
+  const doneRes = await countStudentCompletedExams(session.id, language);
+  if (doneRes.ok) doneExams = Math.min(doneRes.data, exams);
 
   async function logout() {
     "use server";
