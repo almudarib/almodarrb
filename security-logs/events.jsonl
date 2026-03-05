@@ -222,3 +222,4 @@
 {"type":"mask_on","data":{},"ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36","ts":1772664404261,"ip":"::1","time":"2026-03-04T22:46:44.283Z"}
 {"type":"mask_off","data":{},"ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36","ts":1772664470779,"ip":"::1","time":"2026-03-04T22:47:50.808Z"}
 {"type":"mask_on","data":{},"ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36","ts":1772664480363,"ip":"::1","time":"2026-03-04T22:48:00.379Z"}
+{"type":"mask_off","data":{},"ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.107.1 Chrome/142.0.7444.235 Electron/39.2.7 Safari/537.36","ts":1772747234973,"ip":"::1","time":"2026-03-05T21:47:15.124Z"}

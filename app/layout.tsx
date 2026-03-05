@@ -18,9 +18,9 @@ export const metadata: Metadata = {
   description: "المدرب - تعليم القيادة بادارة المدرب والاستاذ (أبو تيم) ",
   manifest: "/manifest.json",
   icons: [
-    { rel: "icon", url: "/logo%20(1).png" },
-    { rel: "shortcut icon", url: "/logo%20(1).png" },
-    { rel: "apple-touch-icon", url: "/logo%20(1).png" },
+    { rel: "icon", url: "/icon.png" },
+    { rel: "shortcut icon", url: "/icon.png" },
+    { rel: "apple-touch-icon", url: "/apple-touch-icon.png" },
   ],
 };
 
@@ -34,8 +34,8 @@ export default function RootLayout({
       <head>
         <meta name="emotion-insertion-point" content="" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/logo%20(1).png" />
-        <link rel="apple-touch-icon" href="/logo%20(1).png" />
+        <link rel="icon" href="/icon.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className="antialiased">
         <EmotionProvider>
