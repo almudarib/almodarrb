@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: "%s | المدرب",
   },
   applicationName: "المدرب",
-  description: "منصة اختبارات وتدريب",
+  description: "المدرب - تعليم القيادة بادارة أبو تيم",
   icons: [
     { rel: "icon", url: "/logo%20(1).png" },
     { rel: "shortcut icon", url: "/logo%20(1).png" },
