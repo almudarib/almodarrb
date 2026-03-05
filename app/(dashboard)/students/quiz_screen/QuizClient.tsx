@@ -271,8 +271,28 @@ function OptionButton({ letter, text, state, onClick, disabled }: any) {
       }}
     >
       <Typography fontWeight={700} sx={{ textAlign: 'right', flex: 1, px: 1 }}>{text}</Typography>
-      <Box sx={{ width: 32, height: 32, borderRadius: '50%', bgcolor: styles.iconBg, color: styles.iconText, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
-        {letter}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {(state === 'correct' || state === 'wrong') && (
+          <Box
+            sx={{
+              width: 28,
+              height: 28,
+              borderRadius: '50%',
+              bgcolor: state === 'correct' ? '#28a745' : '#dc3545',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 900,
+              fontSize: 16
+            }}
+          >
+            {state === 'correct' ? '✓' : '✗'}
+          </Box>
+        )}
+        <Box sx={{ width: 32, height: 32, borderRadius: '50%', bgcolor: styles.iconBg, color: styles.iconText, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
+          {letter}
+        </Box>
       </Box>
     </Button>
   );
