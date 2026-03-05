@@ -15,7 +15,8 @@ export const metadata: Metadata = {
     template: "%s | المدرب",
   },
   applicationName: "المدرب",
-  description: "المدرب - تعليم القيادة بادارة أبو تيم",
+  description: "المدرب - تعليم القيادة بادارة المدرب والاستاذ (أبو تيم) ",
+  manifest: "/manifest.json",
   icons: [
     { rel: "icon", url: "/logo%20(1).png" },
     { rel: "shortcut icon", url: "/logo%20(1).png" },
@@ -32,6 +33,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="emotion-insertion-point" content="" />
+        <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/logo%20(1).png" />
         <link rel="apple-touch-icon" href="/logo%20(1).png" />
       </head>
