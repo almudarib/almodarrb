@@ -34,8 +34,8 @@ export default function RootLayout({
       <head>
         <meta name="emotion-insertion-point" content="" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/icon.png" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" href="/icon.png" sizes="192x192" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
       </head>
       <body className="antialiased">
         <EmotionProvider>
