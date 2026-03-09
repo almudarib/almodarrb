@@ -7,8 +7,6 @@ import {
   Stack,
   Typography,
   Paper,
-  LinearProgress,
-  Chip,
   Box,
   Container,
   Modal,
@@ -16,7 +14,7 @@ import {
   Backdrop,
   CircularProgress
 } from '@mui/material';
-import { Timer, Star } from 'lucide-react'; // استخدام أيقونة النجمة المطابقة للصورة
+import { Timer, Star } from 'lucide-react';
 import ProtectionProvider from '../../../security/ProtectionProvider';
 
 type Question = {
@@ -32,10 +30,9 @@ type Question = {
 
 export default function QuizClient({
   examId,
-  title,
+  questions,
   durationMinutes,
   groupId,
-  questions,
   onSubmit,
 }: {
   examId: number;
@@ -50,7 +47,7 @@ export default function QuizClient({
   const [answers, setAnswers] = React.useState<Record<number, 'A' | 'B' | 'C' | 'D' | null>>(() =>
     Object.fromEntries(questions.map((q) => [q.id, null]))
   );
-  
+
   const totalSeconds = Math.max(0, Math.floor((durationMinutes || 0) * 60));
   const [left, setLeft] = React.useState(totalSeconds);
   const [submitting, setSubmitting] = React.useState(false);
@@ -61,12 +58,10 @@ export default function QuizClient({
   const currentQuestion = questions[index];
   const selectedAnswer = answers[currentQuestion.id];
 
-  // ضبط التحميل عند تغيير السؤال
   React.useEffect(() => {
     if (currentQuestion.image_url) setImgLoading(true);
   }, [index, currentQuestion.image_url]);
 
-  // التايمر والانتهاء التلقائي
   React.useEffect(() => {
     if (totalSeconds <= 0 || done) return;
     const t = setInterval(() => {
@@ -85,18 +80,14 @@ export default function QuizClient({
   async function handleSubmit() {
     if (submitting || done) return;
     setSubmitting(true);
-
-    const correctCount = questions.reduce((acc, q) => {
-      return acc + (answers[q.id] === q.correct_option ? 1 : 0);
-    }, 0);
-
+    const correctCount = questions.reduce((acc, q) => acc + (answers[q.id] === q.correct_option ? 1 : 0), 0);
     const score = Math.round((correctCount / questions.length) * 100);
     const timeSpent = Math.ceil((totalSeconds - left) / 60);
 
     try {
       await onSubmit({ examId, score, durationMinutes: timeSpent });
       setDone({ score });
-      setShowModal(true); // إظهار المودل المطلوب
+      setShowModal(true);
     } catch (e) {
       setDone({ score });
       setShowModal(true);
@@ -107,58 +98,74 @@ export default function QuizClient({
 
   const mm = Math.floor(left / 60).toString().padStart(2, '0');
   const ss = (left % 60).toString().padStart(2, '0');
-  const progress = totalSeconds > 0 ? ((totalSeconds - left) / totalSeconds) * 100 : 0;
 
   return (
     <ProtectionProvider config={{ watermarkText: 'المدرب والاستاذ أبو تيم', watermarkWithTime: false }}>
-    <Container maxWidth="sm" sx={{ py: 3, direction: 'rtl' }}>
-      <Stack spacing={3}>
-        
-        {/* شريط التقدم باللون الكحلي الداكن */}
-        <Paper elevation={0} sx={{ p: 2, borderRadius: 4, border: '1px solid #f1f5f9' }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-             <Chip 
-              icon={<Timer size={16} />} 
-              label={`${mm}:${ss}`} 
-              sx={{ fontWeight: 800, bgcolor: left < 60 ? '#fef2f2' : '#f8fafc', color: left < 60 ? '#ef4444' : '#09203A' }} 
-            />
-            <Typography variant="subtitle2" fontWeight={800} color="text.secondary">
-              السؤال {index + 1} من {questions.length}
-            </Typography>
-          </Stack>
-          <LinearProgress 
-            variant="determinate" 
-            value={progress} 
-            sx={{ 
-              height: 10, borderRadius: 5, bgcolor: '#e2e8f0',
-              '& .MuiLinearProgress-bar': { bgcolor: '#09203A' } 
-            }} 
-          />
-        </Paper>
-
-        {/* كارد السؤال */}
-        <Paper elevation={0} sx={{ p: 3, borderRadius: 5, border: '1px solid #f1f5f9' }}>
-          <Typography variant="h6" fontWeight={700} mb={3} sx={{ color: '#09203A' }}>
-            {currentQuestion.question}
+      <Container
+        maxWidth="sm"
+        sx={{
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          p: 1.5, // تقليل المساحة الخارجية
+          direction: 'rtl',
+          overflow: 'hidden', // منع السكرول تماماً
+          bgcolor: '#fcfcfc'
+        }}
+      >
+        {/* هيدر مدمج في سطر واحد */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, px: 1 }}>
+          <Typography variant="body2" fontWeight={900} color="#09203A">
+            السؤال {index + 1} / {questions.length}
           </Typography>
 
+          <Box sx={{
+            bgcolor: '#09203A', color: 'white', px: 1.5, py: 0.3, borderRadius: 5,
+            display: 'flex', alignItems: 'center', gap: 0.5
+          }}>
+            <Typography variant="body2" fontWeight={800}>{mm}:{ss}</Typography>
+            <Timer size={14} />
+          </Box>
+        </Box>
+
+        <Paper
+          elevation={0}
+          sx={{
+            p: 2,
+            borderRadius: 6,
+            border: '1px solid #f1f5f9',
+            flexGrow: 0, // لا يتمدد بشكل عشوائي
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.5,
+            overflow: 'hidden',
+            width: '100%'
+          }}
+        >
+          {/* نص السؤال - تقليل الهوامش */}
+          <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#09203A', textAlign: 'center', mb: 0.5 }}>
+            {currentQuestion.question || '.'}
+          </Typography>
+
+          {/* الصورة - تم تصغير الارتفاع لرفع الخيارات والزر */}
           {currentQuestion.image_url && (
-            <Box mb={3} sx={{ 
-              width: '100%', position: 'relative', minHeight: 180, 
-              borderRadius: 4, overflow: 'hidden', bgcolor: '#f8fafc',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #f1f5f9'
+            <Box sx={{
+              width: '100%', height: 140, position: 'relative', borderRadius: 3,
+              bgcolor: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              mb: 1
             }}>
-              {imgLoading && <CircularProgress size={30} sx={{ color: '#BC8803', position: 'absolute' }} />}
-              <img 
+              {imgLoading && <CircularProgress size={20} sx={{ color: '#BC8803' }} />}
+              <img
                 key={currentQuestion.image_url}
-                src={currentQuestion.image_url} 
+                src={currentQuestion.image_url}
                 onLoad={() => setImgLoading(false)}
-                style={{ width: '100%', display: imgLoading ? 'none' : 'block' }} 
+                style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', display: imgLoading ? 'none' : 'block' }}
               />
             </Box>
           )}
 
-          <Stack spacing={1.5}>
+          {/* الخيارات - Stack ضيق لتقريب الأزرار */}
+          <Stack spacing={1}>
             {(['A', 'B', 'C', 'D'] as const).map((letter) => {
               const textMap = { A: currentQuestion.option_a, B: currentQuestion.option_b, C: currentQuestion.option_c, D: currentQuestion.option_d };
               const isCorrect = currentQuestion.correct_option === letter;
@@ -169,88 +176,72 @@ export default function QuizClient({
                 else if (isSelected) state = 'wrong';
               }
               return (
-                <OptionButton key={letter} letter={letter} text={textMap[letter]} state={state} 
+                <OptionButton key={letter} letter={letter} text={textMap[letter]} state={state}
                   onClick={() => { if (!selectedAnswer) setAnswers(p => ({ ...p, [currentQuestion.id]: letter })); }}
                   disabled={!!selectedAnswer || !!done}
                 />
               );
             })}
           </Stack>
+
+          {/* تم رفع الزر ليلتصق بآخر خيار مباشرة */}
+          <Button
+            fullWidth variant="contained"
+            disabled={!selectedAnswer || submitting || !!done}
+            onClick={() => {
+              if (index < questions.length - 1) setIndex(index + 1);
+              else handleSubmit();
+            }}
+            sx={{
+              borderRadius: 3,
+              py: 1.5,
+              mt: 1, // مسافة صغيرة فقط فوق الزر
+              fontWeight: 800,
+              bgcolor: '#BC8803',
+              fontSize: '1rem',
+              boxShadow: 'none',
+              '&:hover': { bgcolor: '#a67702' },
+              '&.Mui-disabled': { bgcolor: '#f1f5f9', color: '#cbd5e1' }
+            }}
+          >
+            {index === questions.length - 1 ? 'إنهاء وإرسال النتيجة' : 'السؤال التالي'}
+          </Button>
         </Paper>
+      </Container>
 
-        {/* زر التالي باللون الذهبي */}
-        <Button
-          fullWidth variant="contained" size="large"
-          disabled={!selectedAnswer || submitting || !!done}
-          onClick={() => {
-            if (index < questions.length - 1) setIndex(index + 1);
-            else handleSubmit();
-          }}
-          sx={{ 
-            borderRadius: 4, py: 2, fontWeight: 800, bgcolor: '#BC8803',
-            '&:hover': { bgcolor: '#a67702' },
-            '&.Mui-disabled': { bgcolor: '#f1f5f9' }
-          }}
-        >
-          {index === questions.length - 1 ? 'إنهاء وإرسال النتيجة' : 'السؤال التالي'}
-        </Button>
-      </Stack>
-
-      {/* مودل انتهى الاختبار - مطابق للصورة المرفقة */}
-      <Modal
-        open={showModal}
-        closeAfterTransition
-        BackdropComponent={Backdrop}
-        BackdropProps={{ timeout: 500 }}
-      >
+      {/* مودل النتيجة */}
+      <Modal open={showModal} closeAfterTransition BackdropComponent={Backdrop} BackdropProps={{ timeout: 500 }}>
         <Fade in={showModal}>
           <Box sx={{
             position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            width: '85%', maxWidth: 350, bgcolor: 'background.paper', borderRadius: 8,
-            boxShadow: 24, p: 4, textAlign: 'center', outline: 'none'
+            width: '85%', maxWidth: 320, bgcolor: 'background.paper', borderRadius: 8,
+            boxShadow: 24, p: 3, textAlign: 'center', outline: 'none'
           }}>
-            {/* عنوان المودل */}
-            <Typography variant="h4" fontWeight={500} sx={{ color: '#09203A', mb: 3 }}>
-              انتهى الاختبار
-            </Typography>
-
-            {/* أيقونة النجمة الدائرية كما في الصورة */}
-            <Box sx={{ 
-              bgcolor: '#FFCC33', // لون النجمة الذهبي
-              width: 90, height: 90, borderRadius: '50%', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              mx: 'auto', mb: 2 
-            }}>
-              <Star size={50} fill="#fff" color="#fff" />
+            <Typography variant="h5" fontWeight={800} sx={{ color: '#09203A', mb: 2 }}>انتهى الاختبار</Typography>
+            <Box sx={{ bgcolor: '#FFCC33', width: 70, height: 70, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+              <Star size={35} fill="#fff" color="#fff" />
             </Box>
-
-            {/* النتيجة */}
-            <Typography sx={{ color: '#64748b', mb: 0.5, fontSize: '1.1rem' }}>
-              درجتك النهائية هي:
-            </Typography>
-            <Typography variant="h2" fontWeight={900} sx={{ color: '#09203A', mb: 4 }}>
-              {done?.score}%
-            </Typography>
-
-            {/* زر العودة للقائمة بنفس لون الهيدر في الصورة */}
-            <Button 
-              fullWidth variant="contained" 
+            <Typography variant="h3" fontWeight={900} sx={{ color: '#09203A', mb: 3 }}>{done?.score}%</Typography>
+            {/* زر العودة داخل المودل */}
+            <Button
+              fullWidth
+              variant="contained"
               onClick={() => {
-                if (groupId) router.push(`/students/group_exams?id=${groupId}`);
-                else router.push('/students/exams_screen');
+                // تحديد الرابط المستهدف
+                const targetUrl = groupId
+                  ? `/students/group_exams?id=${groupId}`
+                  : '/students/exams_screen';
+
+                // استخدام window.location لإجبار المتصفح على تحميل الصفحة من جديد
+                window.location.href = targetUrl;
               }}
-              sx={{ 
-                bgcolor: '#09203A', borderRadius: 3, py: 1.5, fontSize: '1.1rem',
-                fontWeight: 700, textTransform: 'none',
-                '&:hover': { bgcolor: '#1e293b' } 
-              }}
+              sx={{ bgcolor: '#09203A', borderRadius: 3, py: 1.2, fontWeight: 700 }}
             >
               العودة للقائمة
             </Button>
           </Box>
         </Fade>
       </Modal>
-    </Container>
     </ProtectionProvider>
   );
 }
@@ -265,32 +256,20 @@ function OptionButton({ letter, text, state, onClick, disabled }: any) {
   return (
     <Button fullWidth onClick={onClick} disabled={disabled}
       sx={{
-        justifyContent: 'space-between', p: 2, borderRadius: 4, border: '2px solid', 
+        justifyContent: 'space-between', p: 1.2, borderRadius: 3, border: '1.5px solid',
         borderColor: styles.border, bgcolor: styles.bg, color: styles.text,
+        minHeight: 50, textTransform: 'none',
         '&.Mui-disabled': { opacity: 1, color: styles.text, borderColor: styles.border }
       }}
     >
-      <Typography fontWeight={700} sx={{ textAlign: 'right', flex: 1, px: 1 }}>{text}</Typography>
+      <Typography variant="body2" fontWeight={700} sx={{ textAlign: 'right', flex: 1, px: 1 }}>{text}</Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         {(state === 'correct' || state === 'wrong') && (
-          <Box
-            sx={{
-              width: 28,
-              height: 28,
-              borderRadius: '50%',
-              bgcolor: state === 'correct' ? '#28a745' : '#dc3545',
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 900,
-              fontSize: 16
-            }}
-          >
+          <Box sx={{ width: 20, height: 20, borderRadius: '50%', bgcolor: state === 'correct' ? '#28a745' : '#dc3545', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 11 }}>
             {state === 'correct' ? '✓' : '✗'}
           </Box>
         )}
-        <Box sx={{ width: 32, height: 32, borderRadius: '50%', bgcolor: styles.iconBg, color: styles.iconText, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
+        <Box sx={{ width: 28, height: 28, borderRadius: '50%', bgcolor: styles.iconBg, color: styles.iconText, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 13 }}>
           {letter}
         </Box>
       </Box>

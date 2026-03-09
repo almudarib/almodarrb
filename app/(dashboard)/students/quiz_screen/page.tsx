@@ -138,13 +138,14 @@ async function QuizScreenContent({
     <div dir={dir} className="min-h-svh bg-slate-50">
       <div className="max-w-3xl mx-auto px-4 py-4">
         <div className="flex items-center gap-2 mb-4">
-          <Link
-            href={groupId ? `/students/group_exams?id=${groupId}` : '/students/exams_screen'}
-            className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50"
-            aria-label="رجوع"
-          >
-            ← رجوع
-          </Link>
+{/* استبدل Link بـ وسم a عادي أو زر يعتمد على window.location */}
+<a
+  href={groupId ? `/students/group_exams?id=${groupId}` : '/students/exams_screen'}
+  className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 no-underline"
+  aria-label="رجوع"
+>
+  ← رجوع
+</a>
           <h1 className="text-lg font-bold text-slate-800">{title}</h1>
         </div>
         <QuizClient
