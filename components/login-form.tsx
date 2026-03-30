@@ -164,45 +164,53 @@ export function LoginForm() {
           {error && <Alert severity="error" sx={{ width: "100%", borderRadius: "12px" }}>{error}</Alert>}
 
           {/* تذييل الصفحة - منصات التواصل */}
-          <Box
-            sx={{
-              width: "100%",
-              bgcolor: "#f0f2f5", // خلفية الرمادي الفاتح في الأسفل
-              borderRadius: "20px",
-              p: 3,
-              textAlign: "center",
-              border: "1px solid #e0e0e0",
-            }}
-          >
-            <Typography sx={{ mb: 2, color: "#263238", fontWeight: 600 }}>
-              تابعنا على منصات التواصل
-            </Typography>
-            
-            <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 2 }}>
-              {[
-                { icon: <Instagram />, color: "#e1306c" },
-                { icon: <MusicNote />, color: "#000000" },
-                { icon: <Facebook />, color: "#1877f2" },
-                { icon: <WhatsApp />, color: "#25d366" },
-              ].map((social, index) => (
-                <IconButton
-                  key={index}
-                  sx={{
-                    bgcolor: "white",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                    "&:hover": { bgcolor: "#f8f9fa" },
-                    p: 1.5
-                  }}
-                >
-                  {React.cloneElement(social.icon, { sx: { fontSize: 28, color: "#263238" } })}
-                </IconButton>
-              ))}
-            </Stack>
+{/* تذييل الصفحة - منصات التواصل */}
+<Box
+  sx={{
+    width: "100%",
+    bgcolor: "#f0f2f5", // خلفية الرمادي الفاتح في الأسفل
+    borderRadius: "20px",
+    p: 3,
+    textAlign: "center",
+    border: "1px solid #e0e0e0",
+  }}
+>
+  <Typography sx={{ mb: 2, color: "#263238", fontWeight: 600 }}>
+    تابعنا على منصات التواصل
+  </Typography>
+  
+<Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 2 }}>
+  {[
+    { icon: <Instagram />, color: "#e1306c", url: "https://www.instagram.com/almodarreb?igsh=MWVpOTkyMWM4a3ptaQ==" },
+    { icon: <MusicNote />, color: "#000000", url: "https://www.tiktok.com/@almudarib.700?_r=1&_t=ZS-94YJzEyeWjl" },
+    { icon: <Facebook />, color: "#1877f2", url: "https://www.facebook.com/share/1Dw7Pi43m5/" },
+    { icon: <WhatsApp />, color: "#25d366", url: "https://wa.me/963983352558" },
+  ].map((social, index) => (
+    <a
+      key={index}
+      href={social.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ textDecoration: "none" }}
+    >
+      <IconButton
+        sx={{
+          bgcolor: "white",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          "&:hover": { bgcolor: "#f8f9fa" },
+          p: 1.5,
+        }}
+      >
+        {React.cloneElement(social.icon, { sx: { fontSize: 28, color: "#263238" } })}
+      </IconButton>
+    </a>
+  ))}
+</Stack>
 
-            <Typography sx={{ color: "#ffc107", fontWeight: "bold", fontSize: "1.1rem" }}>
-              بإشراف المدرب والاستاذ (أبو تيم)
-            </Typography>
-          </Box>
+  <Typography sx={{ color: "#ffc107", fontWeight: "bold", fontSize: "1.1rem" }}>
+    بإشراف المدرب والاستاذ (أبو تيم)
+  </Typography>
+</Box>
 
         </Stack>
       </Container>
