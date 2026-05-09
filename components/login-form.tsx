@@ -29,7 +29,7 @@ async function sha256Hex(input: string): Promise<string> {
 async function getOrCreateDeviceFingerprint(): Promise<string> {
   try {
     const key = "almodereb_device_fp";
-    const existing = localStorage.getItem(key);
+    const existing = getCookie(key);
     if (existing) return existing;
     const seedParts = [
       navigator.userAgent || "",
@@ -41,11 +41,24 @@ async function getOrCreateDeviceFingerprint(): Promise<string> {
       String(performance?.now() || ""),
     ].join("|");
     const fp = await sha256Hex(seedParts);
-    localStorage.setItem(key, fp);
+    setCookie(key, fp, 365 * 10); // 10 سنوات
     return fp;
   } catch {
     return "anon";
   }
+}
+
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
+function setCookie(name: string, value: string, days: number) {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
 }
 
 function formatErrorMessage(e: unknown): string {
