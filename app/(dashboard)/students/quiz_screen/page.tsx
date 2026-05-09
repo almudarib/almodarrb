@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { getSession } from '@/lib/session';
+import { getSession, clearSession } from '@/lib/session';
+import { redirect } from 'next/navigation';
+import { LOGIN_PATH } from '@/lib/paths';
 import {
   fetchStudent,
   getExam,
@@ -64,8 +66,9 @@ async function QuizScreenContent({
   }
 
   const stuRes = await fetchStudent(studentId);
-  if (!stuRes.ok) {
-    return viewMessage(stuRes.error, { actionHref: '/students/dash', actionText: 'العودة للوحة' });
+  if (!stuRes.ok || !stuRes.data) {
+    await clearSession();
+    redirect(LOGIN_PATH);
   }
   const stu = (stuRes.data as Dict | null) ?? null;
   const showExams = Boolean(stu?.['show_exams']);

@@ -1,4 +1,7 @@
 import { cookies } from 'next/headers';
+import { getSession, clearSession } from '@/lib/session';
+import { redirect } from 'next/navigation';
+import { LOGIN_PATH } from '@/lib/paths';
 import { fetchStudent, listSessions, type Dict } from '@/actions/service';
 import {
   Container,
@@ -14,19 +17,19 @@ import MovieCreationOutlinedIcon from '@mui/icons-material/MovieCreationOutlined
 import { LinkButton } from './LinkButton';
 
 export default async function SessionsList() {
-  const cookieStore = await cookies();
-  const sidCookie = cookieStore.get('student_id');
-  const studentId = parsePositiveInt(sidCookie?.value ?? '');
-
-  let language: string | null = null;
-  if (studentId) {
-    const stuRes = await fetchStudent(studentId);
-    if (stuRes.ok) {
-      const stu = (stuRes.data as Dict) ?? {};
-      const lang = String(stu['language'] ?? '').trim();
-      language = lang || null;
-    }
+  const session = await getSession();
+  if (!session) {
+    redirect(LOGIN_PATH);
   }
+  const studentId = session.id;
+
+  const stuRes = await fetchStudent(studentId);
+  if (!stuRes.ok || !stuRes.data) {
+    await clearSession();
+    redirect(LOGIN_PATH);
+  }
+  const stu = (stuRes.data as Dict) ?? {};
+  const language = String(stu['language'] ?? '').trim() || null;
 
   const byLang = await listSessions({
     isActive: true,

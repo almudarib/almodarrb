@@ -36,6 +36,10 @@ async function DashData() {
   let doneExams = 0;
 
   const stuRes = await fetchStudent(session.id);
+  if (!stuRes.ok || !stuRes.data) {
+    await clearSession();
+    redirect(LOGIN_PATH);
+  }
   const language =
     (stuRes.ok ? ((stuRes.data as Dict | null)?.["language"] as string | undefined) : undefined) ??
     "AR";

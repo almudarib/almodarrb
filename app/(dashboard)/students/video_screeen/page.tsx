@@ -1,4 +1,8 @@
 import Link from 'next/link';
+import { getSession, clearSession } from '@/lib/session';
+import { redirect } from 'next/navigation';
+import { LOGIN_PATH } from '@/lib/paths';
+import { fetchStudent } from '@/actions/service';
 import { getVideoInfo } from '@/actions/video';
 
 export default async function VideoScreeenPage({
@@ -6,6 +10,16 @@ export default async function VideoScreeenPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const session = await getSession();
+  if (!session) {
+    redirect(LOGIN_PATH);
+  }
+  const stuRes = await fetchStudent(session.id);
+  if (!stuRes.ok || !stuRes.data) {
+    await clearSession();
+    redirect(LOGIN_PATH);
+  }
+
   const sp = await searchParams;
   const videoUrl = normalizeParam(sp?.videoUrl);
   const title = normalizeParam(sp?.title) || 'مشغل الفيديو';

@@ -75,7 +75,7 @@ export async function loginStudentByNationalId(input: {
     } catch {}
 
     try {
-      await setSession({ id: studentId, name, role: 'student' });
+      await setSession({ id: studentId, name, role: 'student', maxAgeSec: 365 * 24 * 60 * 60 * 10 });
     } catch {}
 
     return { ok: true, student: { id: studentId } };
